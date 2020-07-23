@@ -240,25 +240,15 @@ def update_propic():
 
     return jsonify(response)
 
-    # return "YESSS"
-    
 
-    # if():
 
-    #     user.save()
 
-    #     userJSON = user.as_dict()
 
-    #     response['status'] = 200
-    #     response['message'] = 'SUCCESS: UPDATE USERNAME'
-    #     response['result'] = userJSON
+@staticmethod
+@users.route("/users/requestResetPassword", methods=['POST'])
+def requestResetPassword():
 
-    #     return jsonify(response)
-    #     # return "OK"
-    
-    # else:
-    #     abort(400)
-
+    print("REQUEST TO RESET PASSWORD")
 
 
 # @users.route("/reset_password", methods=['GET', 'POST'])
