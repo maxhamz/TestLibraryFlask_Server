@@ -36,11 +36,12 @@ def register():
     username = request.form.get('username')
     email = request.form.get('email')
     passwordRaw = request.form.get('password')
+    passwordHashed = User.generate_hash(passwordRaw)
 
     rawUser = {
         'username': username,
         'email': email,
-        'password': passwordRaw
+        'password': passwordHashed
     }
 
     print("what's email?")
@@ -55,7 +56,7 @@ def register():
         user.save()
 
         newUser = User.query.filter_by(email=email).first()
-        newUser1 = newUser.as_dict()
+        newUser1 = User.as_dict(newUser)
 
         response['status'] = 201
         response['message'] = 'REGISTER SUCCESS'
@@ -136,7 +137,8 @@ def login():
     user2CheckJSON = user2Check.as_dict()
 
     # NOW, CHECK IF PASSWORD MATCH
-    passwordMatchFlag = bcrypt.check_password_hash(user2CheckJSON['password'], passwordRaw)
+    # passwordMatchFlag = bcrypt.check_password_hash(user2CheckJSON['password'], passwordRaw)
+    passwordMatchFlag = User.check_hash(user2CheckJSON['password'], passwordRaw)
 
     if (passwordMatchFlag == True):
 
@@ -250,33 +252,82 @@ def requestResetPassword():
 
     print("REQUEST TO RESET PASSWORD")
 
+    inputtedEmail = request.form.get('your_email')
 
-# @users.route("/reset_password", methods=['GET', 'POST'])
-# def reset_request():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.home'))
-#     form = RequestResetForm()
-#     if form.validate_on_submit():
-#         user = User.query.filter_by(email=form.email.data).first()
-#         send_reset_email(user)
-#         flash('An email has been sent with instructions to reset your password.', 'info')
-#         return redirect(url_for('users.login'))
-#     return render_template('reset_request.html', title='Reset Password', form=form)
+    retrieveUser = User.query.filter_by(email=inputtedEmail).first_or_404()
+    retrieveUserJSON = retrieveUser.as_dict()
+
+    userCreds = send_reset_email(retrieveUserJSON)
+
+    accessToken = create_access_token(userCreds)
+
+    retMsg = {
+        'message': 'Reset Instructions Sent.',
+        'access_token': accessToken
+    }
+
+    return retMsg
 
 
-# @users.route("/reset_password/<token>", methods=['GET', 'POST'])
-# def reset_token(token):
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.home'))
-#     user = User.verify_reset_token(token)
-#     if user is None:
-#         flash('That is an invalid or expired token', 'warning')
-#         return redirect(url_for('users.reset_request'))
-#     form = ResetPasswordForm()
-#     if form.validate_on_submit():
-#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-#         user.password = hashed_password
-#         db.session.commit()
-#         flash('Your password has been updated! You are now able to log in', 'success')
-#         return redirect(url_for('users.login'))
-#     return render_template('reset_token.html', title='Reset Password', form=form)
+
+
+@users.route("/users/reset_password", methods=['PUT'])
+# @token_required
+def reset_token():
+
+    print("NOW WE'RE RESETING TOKEN\n\n")
+    print("A PUERAA\n\n")
+
+    token = request.headers.get('access_token')
+    print(token)
+
+    print("\n\n")
+    print("this is:")
+    payload = decode_token(token)['identity']
+
+    print(payload)
+
+    enteredOTP = request.form.get('OTP')
+
+
+    # reset new password after OTP matches
+    if(enteredOTP == payload['OTP']):
+        enteredNewPassword = request.form.get('new_password')
+        enteredConfirmNewPassword = request.form.get('confirm_new_password')
+
+        if(enteredConfirmNewPassword == enteredNewPassword):
+            user = User.query.get_or_404(payload['userid'])
+            # newHashedPassword = hash_password(enteredNewPassword)
+            newHashedPassword = User.generate_hash(enteredNewPassword)
+
+            user.password = newHashedPassword
+            user.save()
+        else:
+            abort(400, message="passwords don't match")
+
+
+    else:
+        abort(401, message="OTP not match")
+    
+    responseMsg = {
+        "status": 200,
+        "message": "Password reset success."
+    }
+
+
+    return responseMsg
+    
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('main.home'))
+    # user = User.verify_reset_token(token)
+    # if user is None:
+    #     flash('That is an invalid or expired token', 'warning')
+    #     return redirect(url_for('users.reset_request'))
+    # form = ResetPasswordForm()
+    # if form.validate_on_submit():
+    #     hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+    #     user.password = hashed_password
+    #     db.session.commit()
+    #     flash('Your password has been updated! You are now able to log in', 'success')
+    #     return redirect(url_for('users.login'))
+    # return render_template('reset_token.html', title='Reset Password', form=form)

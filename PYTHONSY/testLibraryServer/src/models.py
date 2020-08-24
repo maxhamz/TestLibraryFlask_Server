@@ -1,6 +1,6 @@
 from datetime import datetime
-# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-# from flask import current_app
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
 # from dataclasses import dataclass
 from src import db, login_manager, bcrypt
 from flask_login import UserMixin
@@ -40,7 +40,7 @@ class User(db.Model, FlaskSerializeMixin):
         self.username = data['username']
         self.email = data['email']
         # self.image_file = data.get('image_file')
-        self.password = self.__generate_hash(data['password']) # add this line
+        self.password = self.generate_hash(data['password']) # add this line
         self.created_at = datetime.utcnow()
         self.modified_at = datetime.utcnow()
 
@@ -51,13 +51,13 @@ class User(db.Model, FlaskSerializeMixin):
         db.session.commit()
 
 
-    def update(self, data):
-        for key, item in data.items():
-            if key == 'password': # add this new line
-                self.password = self.__generate_hash(item) # add this new line
-            setattr(self, key, item)
-        self.modified_at = datetime.datetime.utcnow()
-        db.session.commit()
+    # def update(self, data):
+    #     for key, item in data.items():
+    #         if key == 'password': # add this new line
+    #             self.password = self.__generate_hash(item) # add this new line
+    #         setattr(self, key, item)
+    #     self.modified_at = datetime.datetime.utcnow()
+    #     db.session.commit()
 
     def delete(self):
         db.session.delete(self)
@@ -75,16 +75,49 @@ class User(db.Model, FlaskSerializeMixin):
 
     
     # add this new method
-    def __generate_hash(self, password):
-        return bcrypt.generate_password_hash(password, rounds=10).decode("utf-8")
+    @staticmethod
+    def generate_hash(passwordInput):
+        return bcrypt.generate_password_hash(passwordInput, rounds=10).decode("utf-8")
   
-    # add this new method
-    def check_hash(self, password):
-        return bcrypt.check_password_hash(self.password, password)
+    # # add this new method
+    # def check_hash(self, password):
+    #     return bcrypt.check_password_hash(self.password, password)
 
-    # serialize to JSON
-    def as_dict(self):
-       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    # add this new method
+    @staticmethod
+    def check_hash(stored, typed):
+        return bcrypt.check_password_hash(stored, typed)
+
+    # # serialize to JSON
+    # def as_dict(self):
+    #    return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    # serialize to JSON, STATIC METHOD
+    @staticmethod
+    def as_dict(thing):
+       return {c.name: getattr(thing, c.name) for c in thing.__table__.columns}
+    
+    #  freeze
+    # def get_reset_token(self, expires_sec=1800):
+    #     s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
+    #     return s.dumps({
+    #         'user_id': self.id, 
+    #         'username': self.username, 
+    #         'email': self.email,
+    #         'image_file': self.image_file
+    #     }).decode('utf-8')
+    
+    # @staticmethod
+    # def verify_reset_token(token):
+    #     s = Serializer(current_app.config['SECRET_KEY'])
+    #     try:
+    #         user_id = s.loads(token)['user_id']
+    #     except:
+    #         return None
+        
+    #     userRaw = User.query.get(user_id).first_or_404()
+    #     userJSON = userRaw
+    #     return 
 
 
 
