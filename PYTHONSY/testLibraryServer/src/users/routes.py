@@ -75,7 +75,7 @@ def getAll():
 
     # SERIALIZE EACH OBJECT INSIDE A LIST
     for user in listUsers:
-        userJSON = user.as_dict()
+        userJSON = User.as_dict(user)
         newUserList.append(userJSON)
     
     # print("HELLO LADIES! LET'S SEE USERS' LIST \n\n")
@@ -97,7 +97,7 @@ def getOneByUsername(username):
     # print("GETTING ONE USERNAME BY USERNAME \n")
     # print(user)
 
-    userJSON = user.as_dict()
+    userJSON = User.as_dict(user)
 
     response['status'] = 200
     response['message'] = 'SUCCESS: GET BY USERNAME'
@@ -115,7 +115,7 @@ def getOneById(userid):
     # print("GETTING ONE USERNAME BY ID \n")
     # print(user)
 
-    userJSON = user.as_dict()
+    userJSON = User.as_dict(user)
 
     response['status'] = 200
     response['message'] = 'SUCCESS: GET BY ID'
@@ -169,6 +169,7 @@ def login():
 #     return "YES"
 
 @staticmethod
+@login_required
 @users.route("/users/changeUsername", methods=['PUT'])
 def change_username():
 
@@ -191,7 +192,7 @@ def change_username():
 
         user.save()
 
-        userJSON = user.as_dict()
+        userJSON = User.as_dict(user)
 
         response['status'] = 200
         response['message'] = 'SUCCESS: UPDATE USERNAME'
@@ -206,6 +207,7 @@ def change_username():
 
 
 @staticmethod
+@login_required
 @users.route("/users/updatePropic", methods=['PUT'])
 def update_propic():
     print("TRYING TO UPDATE PROPIC \n\n")
@@ -234,10 +236,10 @@ def update_propic():
     user.image_file = newPropicPath
     user.save()
 
-    userJSON = user.as_dict()
+    userJSON = User.as_dict(user)
 
     response['status'] = 200
-    response['message'] = 'SUCCESS: UPDATE USERNAME'
+    response['message'] = 'SUCCESS: UPDATE PROPIC'
     response['result'] = userJSON
 
     return jsonify(response)
