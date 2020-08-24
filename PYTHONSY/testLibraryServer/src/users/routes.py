@@ -134,7 +134,7 @@ def login():
 
     # CHECK WHETHER USER EXISTS OR NOT
     user2Check = User.query.filter_by(email=email).first_or_404()
-    user2CheckJSON = user2Check.as_dict()
+    user2CheckJSON = User.as_dict(user2Check)
 
     # NOW, CHECK IF PASSWORD MATCH
     # passwordMatchFlag = bcrypt.check_password_hash(user2CheckJSON['password'], passwordRaw)
