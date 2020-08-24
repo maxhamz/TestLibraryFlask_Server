@@ -1,1 +1,6 @@
-PYTHONSY/testLibraryServer/requirements.txt
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
