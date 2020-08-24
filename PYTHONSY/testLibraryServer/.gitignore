@@ -1,6 +1,3 @@
 # Environments
-.env
-.venv
-env/
-venv/
-ENV/
+**/bin/
+**.env
