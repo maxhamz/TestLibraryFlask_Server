@@ -668,3 +668,57 @@ Reset Password
 
 <hr>
 
+Delete User
+----
+
+  Drops user from database
+
+* **URL**
+
+  /users/reset_password
+
+* **Method:**
+
+  `PUT`
+
+* **URL Params**
+  None
+
+* **Header Params**
+  `access_token`: string (required)
+
+* **Body/Form Params**
+
+  - `new_password`: string
+  - `confirm_new_password`: string
+  - `OTP`: integer
+
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:**<br>
+
+  `{`
+
+   `"message": "User dropped.",`
+
+   `"status": 200`
+
+  `}`
+
+* **Error Responses:**
+
+  * **Code:** 404 NOT FOUND<br />
+    **Content:**<br>`{`
+
+     `"message": "NOT FOUND",`
+
+     `"status": 404`
+
+    `}`
+
+<br>
+
+<hr>
+

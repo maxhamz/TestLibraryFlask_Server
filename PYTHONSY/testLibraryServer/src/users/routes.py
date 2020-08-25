@@ -333,3 +333,18 @@ def reset_token():
     #     flash('Your password has been updated! You are now able to log in', 'success')
     #     return redirect(url_for('users.login'))
     # return render_template('reset_token.html', title='Reset Password', form=form)
+
+
+# delete user
+@users.route("/users/deleteUser/<string:userid>", methods=['DELETE'])
+def dropUser(userid):
+    user2Drop = User.query.filter_by(id=userid).first_or_404()
+    db.session.delete(user2Drop)
+    db.session.commit()
+
+    responseMsg = {
+        "status": 200,
+        "message": "User dropped."
+    }
+
+    return responseMsg
